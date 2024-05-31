@@ -63,6 +63,7 @@ func (mux *ServeMux) Handler(t *Task) (h Handler, pattern string) {
 	defer mux.mu.RUnlock()
 
 	h, pattern = mux.match(t.Type())
+	fmt.Printf("ServeMux: matched, typename:%s, found pattern:%+v, handler:%+v\n", t.Type(), pattern, h)
 	if h == nil {
 		h, pattern = NotFoundHandler(), ""
 	}
@@ -77,6 +78,7 @@ func (mux *ServeMux) Handler(t *Task) (h Handler, pattern string) {
 func (mux *ServeMux) match(typename string) (h Handler, pattern string) {
 	// Check for exact match first.
 	v, ok := mux.m[typename]
+	fmt.Printf("ServeMux: try exact match, typename:%s, found:%+v\n", typename, ok)
 	if ok {
 		return v.h, v.pattern
 	}
@@ -84,6 +86,7 @@ func (mux *ServeMux) match(typename string) (h Handler, pattern string) {
 	// Check for longest valid match.
 	// mux.es contains all patterns from longest to shortest.
 	for _, e := range mux.es {
+		fmt.Printf("ServeMux: match prefix, typename:%s, pattern:%+v\n", typename, e.pattern)
 		if strings.HasPrefix(typename, e.pattern) {
 			return e.h, e.pattern
 		}
@@ -98,6 +101,7 @@ func (mux *ServeMux) Handle(pattern string, handler Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 
+	fmt.Printf("ServeMux: regist handler, pattern:%s, h:%+v\n", pattern, handler)
 	if strings.TrimSpace(pattern) == "" {
 		panic("asynq: invalid pattern")
 	}
